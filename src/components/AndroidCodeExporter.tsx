@@ -108,19 +108,20 @@ fun MixerDashboardScreen(onLaunchOverlay: () -> Unit) {
     var masterVolume by remember { mutableStateOf(70f) }
     var isMuted by remember { mutableStateOf(false) }
 
+    // This should ideally sync with system volume in a real app
     val appList = remember {
         listOf(
-            AppVolumeConfig("Spotify", "Music", "inherit", 0f, 0f),
-            AppVolumeConfig("YouTube", "Video", "relative", -15f, 0f),
-            AppVolumeConfig("PUBG Mobile", "Game", "absolute", 0f, 40f),
-            AppVolumeConfig("Chat Messenger", "Notification", "always-mute", 0f, 0f)
+            AppVolumeConfig("Spotify", "Music", "inherit", 0f, 0f, 70, false, true, true),
+            AppVolumeConfig("YouTube", "Video", "relative", -15f, 0f, 55, false, true, true),
+            AppVolumeConfig("PUBG Mobile", "Game", "absolute", 0f, 40f, 40, false, true, true),
+            AppVolumeConfig("Chat Messenger", "Notification", "always-mute", 0f, 0f, 0, true, true, false)
         )
     }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Android 17 Volume Mixer", fontWeight = FontWeight.Bold) },
+                title = { Text("Volume Mixer", fontWeight = FontWeight.Bold) },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color(0xFF6750A4),
                     titleContentColor = Color.White
@@ -166,14 +167,10 @@ fun MixerDashboardScreen(onLaunchOverlay: () -> Unit) {
                             modifier = Modifier.weight(1f),
                             enabled = !isMuted
                         )
-                        Button(
-                            onClick = { isMuted = !isMuted },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = if (isMuted) Color.Red else Color(0xFF6750A4)
-                            )
-                        ) {
-                            Text(if (isMuted) "Unmute" else "Mute")
-                        }
+                        Switch(
+                            checked = !isMuted,
+                            onCheckedChange = { isMuted = !it }
+                        )
                     }
                 }
             }
@@ -190,8 +187,8 @@ fun MixerDashboardScreen(onLaunchOverlay: () -> Unit) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("Interactive Floating HUD", fontWeight = FontWeight.Bold)
-                        Text("Float the mixer sliders over other background apps.", fontSize = 11.sp, color = Color.Gray)
+                        Text("Floating Mixer HUD", fontWeight = FontWeight.Bold)
+                        Text("Control per-app volume over other apps.", fontSize = 11.sp, color = Color.Gray)
                     }
                     Button(onClick = onLaunchOverlay) {
                         Text("Trigger HUD")
@@ -199,7 +196,7 @@ fun MixerDashboardScreen(onLaunchOverlay: () -> Unit) {
                 }
             }
 
-            Text("Configured Per-App Startup Rules", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+            Text("Active App Mixer", fontWeight = FontWeight.Bold, fontSize = 14.sp)
 
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -218,7 +215,11 @@ data class AppVolumeConfig(
     val category: String,
     val rule: String,
     val relativeValue: Float,
-    val absoluteValue: Float
+    val absoluteValue: Float,
+    var userVolume: Int,
+    var isMuted: Boolean,
+    var isActive: Boolean,
+    var isPlaying: Boolean
 )
 
 @Composable
@@ -261,6 +262,8 @@ fun AppVolumeRuleRow(app: AppVolumeConfig, masterVol: Float) {
             }
         }
     }
+}
+
 }`
     },
     {
