@@ -521,7 +521,7 @@ android {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.1"
+        kotlinCompilerExtensionVersion = "1.5.14"
     }
     packaging {
         resources {
@@ -588,8 +588,14 @@ include(":app")
       zip.file("build.gradle.kts", `// Top-level build file
 plugins {
     id("com.android.application") version "8.2.2" apply false
-    id("org.jetbrains.kotlin.android") version "1.9.0" apply false
+    id("org.jetbrains.kotlin.android") version "1.9.24" apply false
 }
+`);
+
+      zip.file("gradle.properties", `# Enable AndroidX and auto-conversion of third-party libraries to AndroidX
+android.useAndroidX=true
+android.enableJetifier=true
+org.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=512m
 `);
 
       // Add resource layouts & styles
