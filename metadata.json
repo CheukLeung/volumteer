@@ -1,0 +1,6 @@
+{
+  "name": "Per-App Volume Mixer",
+  "description": "An interactive Android 17 simulator showing per-app volume controls, quick settings tiles, system overlays, and startup rules for active and inactive apps.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
