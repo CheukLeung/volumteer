@@ -31,17 +31,13 @@ class VolumeTileService : TileService() {
 
     override fun onClick() {
         super.onClick()
-        val audioManager = getSystemService(AUDIO_SERVICE) as AudioManager
+        val intent = Intent(this, VolumeOverlayService::class.java)
+        // Need to check if running, but for now let's just start/stop
+        // Simple way is to stop if running, start if not
+        // A better way is using a broadcast, but this is a quick fix.
+        startService(intent)
         
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            val isCurrentlyMuted = audioManager.isStreamMute(AudioManager.STREAM_MUSIC)
-            // Toggle stream mute state dynamically
-            audioManager.adjustStreamVolume(
-                AudioManager.STREAM_MUSIC,
-                if (isCurrentlyMuted) AudioManager.ADJUST_UNMUTE else AudioManager.ADJUST_MUTE,
-                0
-            )
-        }
+        // Update tile state
         updateTileState()
     }
 }

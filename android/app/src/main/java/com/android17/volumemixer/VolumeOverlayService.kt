@@ -52,31 +52,36 @@ class VolumeOverlayService : Service() {
         overlayView = inflater.inflate(R.layout.floating_mixer_overlay, null)
 
         overlayView?.let { view ->
-            val masterSeekBar = view.findViewById<SeekBar>(R.id.overlay_master_seekbar)
-            val appTitle = view.findViewById<TextView>(R.id.overlay_app_title)
+            val appsContainer = view.findViewById<android.widget.LinearLayout>(R.id.apps_container)
             val closeBtn = view.findViewById<Button>(R.id.overlay_close_btn)
 
-            val currentVol = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
-            val maxVol = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+            // Mock recent media apps
+            val recentApps = listOf("Spotify", "YouTube", "Chrome")
             
-            masterSeekBar.max = maxVol
-            masterSeekBar.progress = currentVol
-
-            masterSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-                override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                    if (fromUser) {
-                        audioManager.setStreamVolume(
-                            AudioManager.STREAM_MUSIC,
-                            progress,
-                            AudioManager.FLAG_SHOW_UI
-                        )
-                        val percent = if (maxVol > 0) ((progress.toFloat() / maxVol) * 100).toInt() else 0
-                        appTitle.text = "Music: $percent%"
-                    }
+            recentApps.forEach { appName ->
+                val appRow = LinearLayout(this).apply {
+                    orientation = LinearLayout.VERTICAL
+                    layoutParams = LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT
+                    ).apply { setMargins(0, 0, 0, 16) }
                 }
-                override fun onStartTrackingTouch(seekBar: SeekBar?) {}
-                override fun onStopTrackingTouch(seekBar: SeekBar?) {}
-            })
+                
+                val title = TextView(this).apply {
+                    text = appName
+                    textSize = 12f
+                    setTextColor(android.graphics.Color.BLACK)
+                }
+                
+                val seekBar = SeekBar(this).apply {
+                    max = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+                    progress = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
+                }
+                
+                appRow.addView(title)
+                appRow.addView(seekBar)
+                appsContainer.addView(appRow)
+            }
 
             closeBtn.setOnClickListener {
                 stopSelf()

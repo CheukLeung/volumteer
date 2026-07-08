@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="220dp"
+    android:layout_width="260dp"
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:background="#FFFFFF"
@@ -11,28 +11,19 @@
     android:layout_margin="8dp">
 
     <TextView
-        android:id="@+id/overlay_app_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Per-App Mixer"
+        android:text="Recent Media Apps"
         android:textStyle="bold"
         android:textColor="#6750A4"
         android:textSize="14sp"
         android:layout_marginBottom="12dp" />
 
-    <TextView
+    <LinearLayout
+        android:id="@+id/apps_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Spotify"
-        android:textSize="12sp"
-        android:textStyle="bold"
-        android:textColor="#1C1B1F" />
-
-    <SeekBar
-        android:id="@+id/overlay_master_seekbar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp" />
+        android:orientation="vertical" />
 
     <Button
         android:id="@+id/overlay_close_btn"
@@ -42,5 +33,6 @@
         android:backgroundTint="#6750A4"
         android:textColor="#FFFFFF"
         android:textSize="12sp"
-        android:textAllCaps="false" />
+        android:textAllCaps="false"
+        android:layout_marginTop="16dp" />
 </LinearLayout>

@@ -2,8 +2,12 @@ package com.android17.volumemixer
 
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ApplicationInfo
+import android.content.pm.PackageManager
 import android.media.AudioManager
 import android.net.Uri
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import android.os.Bundle
 import android.provider.Settings
 import android.widget.Toast
@@ -120,6 +124,16 @@ fun MixerDashboardScreen(onLaunchOverlay: () -> Unit) {
         }
     }
 
+    val packageManager = context.packageManager
+    var showAddAppDialog by remember { mutableStateOf(false) }
+    val installedApps = remember {
+        packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
+            .filter { it.flags and ApplicationInfo.FLAG_SYSTEM == 0 }
+            .map { packageManager.getApplicationLabel(it).toString() }
+            .distinct()
+            .sorted()
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -127,10 +141,38 @@ fun MixerDashboardScreen(onLaunchOverlay: () -> Unit) {
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color(0xFF6750A4),
                     titleContentColor = Color.White
-                )
+                ),
+                actions = {
+                    IconButton(onClick = { showAddAppDialog = true }) {
+                        Icon(Icons.Default.Add, contentDescription = "Add App")
+                    }
+                }
             )
         }
     ) { innerPadding ->
+        if (showAddAppDialog) {
+            AlertDialog(
+                onDismissRequest = { showAddAppDialog = false },
+                title = { Text("Select App") },
+                text = {
+                    LazyColumn {
+                        items(installedApps) { appName ->
+                            TextButton(onClick = {
+                                appList.add(AppVolumeConfig(appName, "Music", "inherit", 0f, 0f, 100, false, true, true))
+                                showAddAppDialog = false
+                            }) {
+                                Text(appName)
+                            }
+                        }
+                    }
+                },
+                confirmButton = {
+                    TextButton(onClick = { showAddAppDialog = false }) {
+                        Text("Cancel")
+                    }
+                }
+            )
+        }
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -219,7 +261,7 @@ fun MixerDashboardScreen(onLaunchOverlay: () -> Unit) {
 data class AppVolumeConfig(
     val name: String,
     val category: String,
-    val rule: String,
+    var rule: String,
     val relativeValue: Float,
     val absoluteValue: Float,
     var userVolume: Int,
@@ -232,6 +274,10 @@ data class AppVolumeConfig(
 fun AppVolumeRuleRow(app: AppVolumeConfig, masterVol: Float, onUpdate: () -> Unit) {
     var volume by remember { mutableStateOf(app.userVolume.toFloat()) }
     var muted by remember { mutableStateOf(app.isMuted) }
+    var rule by remember { mutableStateOf(app.rule) }
+    var expanded by remember { mutableStateOf(false) }
+
+    val rules = listOf("inherit", "relative", "absolute", "always-mute")
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -247,14 +293,31 @@ fun AppVolumeRuleRow(app: AppVolumeConfig, masterVol: Float, onUpdate: () -> Uni
             ) {
                 Column {
                     Text(app.name, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                    Text("Rule: ${app.rule.uppercase()}", fontSize = 10.sp, color = Color(0xFF6750A4), fontFamily = FontFamily.Monospace)
+                    Box {
+                        TextButton(onClick = { expanded = true }) {
+                            Text("Rule: ${rule.uppercase()}", fontSize = 10.sp, color = Color(0xFF6750A4), fontFamily = FontFamily.Monospace)
+                        }
+                        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                            rules.forEach { r ->
+                                DropdownMenuItem(
+                                    text = { Text(r.uppercase()) },
+                                    onClick = {
+                                        rule = r
+                                        app.rule = r
+                                        expanded = false
+                                        onUpdate()
+                                    }
+                                )
+                            }
+                        }
+                    }
                 }
                 Switch(
                     checked = !muted,
                     onCheckedChange = { muted = !it; app.isMuted = muted; onUpdate() }
                 )
             }
-            if (!muted) {
+            if (!muted && rule != "always-mute") {
                 Slider(
                     value = volume,
                     onValueChange = { volume = it; app.userVolume = it.toInt(); onUpdate() },
